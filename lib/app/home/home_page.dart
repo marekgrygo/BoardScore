@@ -4,9 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:stoliki_wyniki/app/home/alert_dialog.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({
-    Key? key,
-  }) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +24,17 @@ class _ScoreTrackerState extends State<ScoreTracker> {
   int numberOfCategories = 5;
   List<String> playerNames = List.generate(2, (index) => "Gracz ${index + 1}");
   List<List<int>> scores = List.generate(2, (index) => List<int>.filled(5, 0));
-  List<int> playerTotalScores =
-      List<int>.generate(2, (index) => 0); // Inicjalizacja playerTotalScores
-
-  // Dodaj kontrolery do pól tekstowych
+  List<int> playerTotalScores = List<int>.generate(2, (index) => 0);
   List<List<TextEditingController>> controllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    initializeData();
+  }
 
   void initializeData() {
     setState(() {
-      // Aktualizuj rozmiar scores, jeśli liczba graczy lub kategorii się zwiększyła
       if (numberOfPlayers > scores.length) {
         scores.addAll(List.generate(numberOfPlayers - scores.length,
             (index) => List<int>.filled(numberOfCategories, 0)));
@@ -57,7 +57,6 @@ class _ScoreTrackerState extends State<ScoreTracker> {
           if (controllers[i].length <= j) {
             controllers[i].add(TextEditingController());
           }
-          // scores[i][j] = 0; // Usuń tę linię, aby uniknąć błędu
           controllers[i][j].clear();
         }
       }
@@ -65,14 +64,7 @@ class _ScoreTrackerState extends State<ScoreTracker> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    initializeData();
-  }
-
-  @override
   void dispose() {
-    // Zwolnij kontrolery pól tekstowych
     for (int i = 0; i < controllers.length; i++) {
       for (int j = 0; j < controllers[i].length; j++) {
         controllers[i][j].dispose();

@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stoliki Wyniki'),
+        title: const Text('BoardScores'),
       ),
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
