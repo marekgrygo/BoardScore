@@ -23,7 +23,8 @@ class _ScoreTrackerState extends State<ScoreTracker> {
   int numberOfPlayers = 2;
   int numberOfCategories = 5;
   List<String> playerNames = List.generate(2, (index) => "Gracz ${index + 1}");
-  List<List<int>> scores = List.generate(2, (index) => List<int>.filled(7, 0));
+  List<List<String>> scores =
+      List.generate(2, (index) => List<String>.filled(5, ''));
   List<int> playerTotalScores = List<int>.generate(2, (index) => 0);
   List<List<TextEditingController?>> controllers = [];
 
@@ -34,39 +35,36 @@ class _ScoreTrackerState extends State<ScoreTracker> {
   }
 
   void initializeData() {
-    if (numberOfPlayers > scores.length) {
-      scores.addAll(List.generate(numberOfPlayers - scores.length,
-          (index) => List<int>.filled(numberOfCategories, 0)));
-      playerTotalScores.addAll(
-          List<int>.filled(numberOfPlayers - playerTotalScores.length, 0));
-    }
-    if (numberOfCategories > scores[0].length) {
-      for (int i = 0; i < scores.length; i++) {
-        scores[i] = List<int>.from(scores[i])
-          ..addAll(List<int>.filled(numberOfCategories - scores[0].length, 0));
-      }
-    }
+    setState(() {
+      scores = List.generate(
+        numberOfPlayers,
+        (index) => List<String>.filled(numberOfCategories, ''),
+      );
+      playerTotalScores = List<int>.generate(numberOfPlayers, (index) => 0);
 
-    for (int i = 0; i < numberOfPlayers; i++) {
-      for (int j = 0; j < numberOfCategories; j++) {
-        if (controllers.length <= i) {
-          controllers.add([]);
-        }
-        if (controllers[i].length <= j) {
-          controllers[i].add(TextEditingController());
-        }
-      }
-    }
+      controllers = List.generate(
+        numberOfPlayers,
+        (i) => List.generate(
+          numberOfCategories,
+          (j) => TextEditingController(),
+        ),
+      );
+    });
   }
 
   void resetPoints() {
-    for (int i = 0; i < numberOfPlayers; i++) {
-      for (int j = 0; j < numberOfCategories; j++) {
-        if (controllers[i][j]?.text.isNotEmpty ?? false) {
-          controllers[i][j]?.clear();
-        }
+    setState(() {
+      scores = List.generate(
+        numberOfPlayers,
+        (index) => List<String>.filled(numberOfCategories, ''),
+      );
+      playerTotalScores = List<int>.generate(numberOfPlayers, (index) => 0);
+    });
+
+    for (int i = 0; i < controllers.length; i++) {
+      for (int j = 0; j < controllers[i].length; j++) {
+        controllers[i][j]?.clear();
       }
-      playerTotalScores[i] = 0;
     }
   }
 
@@ -96,7 +94,9 @@ class _ScoreTrackerState extends State<ScoreTracker> {
                 setState(() {
                   numberOfPlayers = value.toInt();
                   playerNames = List.generate(
-                      numberOfPlayers, (index) => "Gracz ${index + 1}");
+                    numberOfPlayers,
+                    (index) => "Gracz ${index + 1}",
+                  );
                   initializeData();
                 });
               },
@@ -135,14 +135,15 @@ class _ScoreTrackerState extends State<ScoreTracker> {
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9-]')),
+                                RegExp(r'[0-9-]'),
+                              ),
                             ],
                             onChanged: (value) {
                               setState(() {
-                                scores[playerIndex][categoryIndex - 1] =
-                                    int.tryParse(value) ?? 0;
+                                scores[playerIndex][categoryIndex - 1] = value;
                                 playerTotalScores[playerIndex] =
                                     scores[playerIndex]
+                                        .map((e) => int.tryParse(e) ?? 0)
                                         .fold(0, (a, b) => a + b);
                               });
                             },
@@ -189,9 +190,7 @@ class _ScoreTrackerState extends State<ScoreTracker> {
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   onPressed: () {
-                    setState(() {
-                      resetPoints();
-                    });
+                    resetPoints();
                   },
                   icon: const Icon(FontAwesomeIcons.trash),
                   label: const Text('Wyczyść dane'),
