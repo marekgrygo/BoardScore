@@ -23,9 +23,9 @@ class _ScoreTrackerState extends State<ScoreTracker> {
   int numberOfPlayers = 2;
   int numberOfCategories = 5;
   List<String> playerNames = List.generate(2, (index) => "Gracz ${index + 1}");
-  List<List<int>> scores = List.generate(2, (index) => List<int>.filled(5, 0));
+  List<List<int>> scores = List.generate(2, (index) => List<int>.filled(7, 0));
   List<int> playerTotalScores = List<int>.generate(2, (index) => 0);
-  List<List<TextEditingController>> controllers = [];
+  List<List<TextEditingController?>> controllers = [];
 
   @override
   void initState() {
@@ -34,40 +34,47 @@ class _ScoreTrackerState extends State<ScoreTracker> {
   }
 
   void initializeData() {
-    setState(() {
-      if (numberOfPlayers > scores.length) {
-        scores.addAll(List.generate(numberOfPlayers - scores.length,
-            (index) => List<int>.filled(numberOfCategories, 0)));
-        playerTotalScores.addAll(
-            List<int>.filled(numberOfPlayers - playerTotalScores.length, 0));
+    if (numberOfPlayers > scores.length) {
+      scores.addAll(List.generate(numberOfPlayers - scores.length,
+          (index) => List<int>.filled(numberOfCategories, 0)));
+      playerTotalScores.addAll(
+          List<int>.filled(numberOfPlayers - playerTotalScores.length, 0));
+    }
+    if (numberOfCategories > scores[0].length) {
+      for (int i = 0; i < scores.length; i++) {
+        scores[i] = List<int>.from(scores[i])
+          ..addAll(List<int>.filled(numberOfCategories - scores[0].length, 0));
       }
-      if (numberOfCategories > scores[0].length) {
-        for (int i = 0; i < scores.length; i++) {
-          scores[i] = List<int>.from(scores[i])
-            ..addAll(
-                List<int>.filled(numberOfCategories - scores[0].length, 0));
-        }
-      }
+    }
 
-      for (int i = 0; i < numberOfPlayers; i++) {
-        for (int j = 0; j < numberOfCategories; j++) {
-          if (controllers.length <= i) {
-            controllers.add([]);
-          }
-          if (controllers[i].length <= j) {
-            controllers[i].add(TextEditingController());
-          }
-          controllers[i][j].clear();
+    for (int i = 0; i < numberOfPlayers; i++) {
+      for (int j = 0; j < numberOfCategories; j++) {
+        if (controllers.length <= i) {
+          controllers.add([]);
+        }
+        if (controllers[i].length <= j) {
+          controllers[i].add(TextEditingController());
         }
       }
-    });
+    }
+  }
+
+  void resetPoints() {
+    for (int i = 0; i < numberOfPlayers; i++) {
+      for (int j = 0; j < numberOfCategories; j++) {
+        if (controllers[i][j]?.text.isNotEmpty ?? false) {
+          controllers[i][j]?.clear();
+        }
+      }
+      playerTotalScores[i] = 0;
+    }
   }
 
   @override
   void dispose() {
     for (int i = 0; i < controllers.length; i++) {
       for (int j = 0; j < controllers[i].length; j++) {
-        controllers[i][j].dispose();
+        controllers[i][j]?.dispose();
       }
     }
     super.dispose();
@@ -171,6 +178,7 @@ class _ScoreTrackerState extends State<ScoreTracker> {
                         return CustomAlertDialog(
                           sortedResults: sortedResults,
                           winnerName: winnerName,
+                          resetPointsFunction: resetPoints,
                         );
                       },
                     );
@@ -181,7 +189,9 @@ class _ScoreTrackerState extends State<ScoreTracker> {
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   onPressed: () {
-                    initializeData();
+                    setState(() {
+                      resetPoints();
+                    });
                   },
                   icon: const Icon(FontAwesomeIcons.trash),
                   label: const Text('Wyczyść dane'),

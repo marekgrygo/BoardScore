@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 class CustomAlertDialog extends StatelessWidget {
   final List<Map<String, dynamic>> sortedResults;
   final String winnerName;
+  final VoidCallback resetPointsFunction;
 
-  const CustomAlertDialog(
-      {super.key, required this.sortedResults, required this.winnerName});
+  const CustomAlertDialog({
+    Key? key,
+    required this.sortedResults,
+    required this.winnerName,
+    required this.resetPointsFunction,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +30,7 @@ class CustomAlertDialog extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(
+        ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
